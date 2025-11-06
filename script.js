@@ -11,31 +11,43 @@ const map = new mapboxgl.Map({
             type: 'geojson',
             data: 'https://raw.githubusercontent.com/marieltdr/183geodata/refs/heads/main/183data.geojson',
             generateId: true,
-            cluster: true, 
-            clusterMaxZoom: 12, 
-            clusterRadius: 50 
+            cluster: true, // Enable clustering
+            clusterMaxZoom: 12, // Max zoom level to cluster points on
+            clusterRadius: 50 // Radius in pixels to use for clustering
       });
 
         map.addLayer({
         id: 'clusters',
         type: 'circle',
         source: 'points-data',
-        filter: ['has', 'point_count'], 
+        filter: ['has', 'point_count'], // Filter for cluster features
         paint: {
             'circle-color': [
                 'step',
                 ['get', 'point_count'],
-                '#51bbd6', 
-                100, '#f1f075',
-                750, '#f28cb1' 
+                '#51bbd6', // Color for clusters with less than 100 points
+                100, '#f1f075', // Color for clusters with 100-750 points
+                750, '#f28cb1' // Color for clusters with 750+ points
             ],
             'circle-radius': [
                 'step',
                 ['get', 'point_count'],
-                20, 100, 30, 750, 40 
+                20, 100, 30, 750, 40 // Radius based on point count
             ]
         }
     });
+
+        map.addLayer({
+            id: 'cluster-count',
+            type: 'symbol',
+            source: 'points-data',
+            filter: ['has', 'point_count'],
+            layout: {
+                'text-field': ['get', 'point_count_abbreviated'],
+                'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+                'text-size': 12
+            }
+        });
 
         map.addLayer({
             id: 'unclustered-point',
@@ -122,10 +134,6 @@ map.on('mouseleave', 'points-layer', () => {
             { hover: false }
         );
     }
-    hoveredStateId = null;
-});
-
-  });
     hoveredStateId = null;
 });
 
