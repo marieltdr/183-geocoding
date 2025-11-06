@@ -63,6 +63,28 @@ const map = new mapboxgl.Map({
             }
         });
 
+        map.addInteraction('click-clusters', {
+            type: 'click',
+            target: { layerId: 'clusters' },
+            handler: (e) => {
+                const features = map.queryRenderedFeatures(e.point, {
+                    layers: ['clusters']
+                });
+                const clusterId = features[0].properties.cluster_id;
+                map.getSource('earthquakes').getClusterExpansionZoom(
+                    clusterId,
+                    (err, zoom) => {
+                        if (err) return;
+
+                        map.easeTo({
+                            center: features[0].geometry.coordinates,
+                            zoom: zoom
+                        });
+                    }
+                );
+            }
+        });
+
      map.addLayer({
         id: 'points-layer',
         type: 'circle',
