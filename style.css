@@ -28,3 +28,4 @@ h2 {
     font-size: 12px;
     color: #333;
 }
+.mapboxgl-canvas-container { cursor: url(cursor.CUR), auto !important }
