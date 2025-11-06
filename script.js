@@ -37,6 +37,54 @@ const map = new mapboxgl.Map({
         }
     });
 
+        map.addLayer({
+            id: 'cluster-count',
+            type: 'symbol',
+            source: 'points-data',
+            filter: ['has', 'point_count'],
+            layout: {
+                'text-field': ['get', 'point_count_abbreviated'],
+                'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+                'text-size': 12
+            }
+        });
+
+        map.addLayer({
+            id: 'unclustered-point',
+            type: 'circle',
+            source: 'points-data',
+            filter: ['!', ['has', 'point_count']],
+            paint: {
+                'circle-color': '#11b4da',
+                'circle-radius': 4,
+                'circle-stroke-width': 1,
+                'circle-stroke-color': '#fff',
+                'circle-emissive-strength': 1
+            }
+        });
+
+        map.addInteraction('click-clusters', {
+            type: 'click',
+            target: { layerId: 'clusters' },
+            handler: (e) => {
+                const features = map.queryRenderedFeatures(e.point, {
+                    layers: ['clusters']
+                });
+                const clusterId = features[0].properties.cluster_id;
+                map.getSource('earthquakes').getClusterExpansionZoom(
+                    clusterId,
+                    (err, zoom) => {
+                        if (err) return;
+
+                        map.easeTo({
+                            center: features[0].geometry.coordinates,
+                            zoom: zoom
+                        });
+                    }
+                );
+            }
+        });
+
      map.addLayer({
         id: 'points-layer',
         type: 'circle',
@@ -108,6 +156,10 @@ map.on('mouseleave', 'points-layer', () => {
             { hover: false }
         );
     }
+    hoveredStateId = null;
+});
+
+  });
     hoveredStateId = null;
 });
 
