@@ -28,4 +28,4 @@ h2 {
     font-size: 12px;
     color: #333;
 }
-.mapboxgl-canvas-container { cursor: url(https://github.com/marieltdr/183geodata/blob/main/cursor.cur), auto !important }
+.mapboxgl-canvas-container { cursor: url(cursor.cur), auto !important }
