@@ -2,24 +2,53 @@ mapboxgl.accessToken = 'pk.eyJ1IjoibWFyaWVsdGRyIiwiYSI6ImNtaDljY3lnNjA1NzIya3Bwb
 const map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/marieltdr/cmh9cfchm009g01ra3lh24uro', // Use the standard style for the map
-        zoom: 9, // initial zoom level, 0 is the world view, higher values zoom in
-        center: [-122.27, 37.8] // center the map on this longitude and latitude
+        zoom: 12, // initial zoom level, 0 is the world view, higher values zoom in
+        center: [-122.275, 37.871] // center the map on this longitude and latitude
      });
+     
   map.on('load', function() {
       map.addSource('points-data', {
             type: 'geojson',
-            data: 'https://raw.githubusercontent.com/cwilmott/c183-webmap/refs/heads/main/data/183-data.geojson'
+            data: 'https://raw.githubusercontent.com/marieltdr/183geodata/refs/heads/main/183data.geojson',
+            generateId: true,
+            cluster: true, // Enable clustering
+            clusterMaxZoom: 12, // Max zoom level to cluster points on
+            clusterRadius: 50 // Radius in pixels to use for clustering
       });
+
+        map.addLayer({
+        id: 'clusters',
+        type: 'circle',
+        source: 'points-data',
+        filter: ['has', 'point_count'], // Filter for cluster features
+        paint: {
+            'circle-color': [
+                'step',
+                ['get', 'point_count'],
+                '#51bbd6', // Color for clusters with less than 100 points
+                100, '#f1f075', // Color for clusters with 100-750 points
+                750, '#f28cb1' // Color for clusters with 750+ points
+            ],
+            'circle-radius': [
+                'step',
+                ['get', 'point_count'],
+                20, 100, 30, 750, 40 // Radius based on point count
+            ]
+        }
+    });
 
      map.addLayer({
         id: 'points-layer',
         type: 'circle',
         source: 'points-data',
         paint: {
-              'circle-color': '#4264FB',
-              'circle-radius': 6,
-              'circle-stroke-width': 2,
-              'circle-stroke-color': '#ffffff'
+        'circle-radius': [
+            'case',
+            ['boolean', ['feature-state', 'hover'], false],
+            12, // Size when hovered
+            6   // Default size
+        ],
+        'circle-color': 'blue'
           }
       });
       map.on('click', 'points-layer', (e) => {
@@ -30,12 +59,12 @@ const map = new mapboxgl.Map({
           // Create popup content using the properties from the data
            const popupContent = `
               <div>
-                  <h3>${properties.Landmark}</h3>
-                  <p><strong>Address:</strong> ${properties.Address}</p>
-                  <p><strong>Architect & Date:</strong> ${properties.Architect_Date}</p>
-                  <p><strong>Designated:</strong> ${properties.Designated}</p>
+                  <h3>${properties["original_*Landmark*"]}</h3>
+                  <p><strong>Address:</strong> ${properties["original_*Address*"]}</p>
+                  <p><strong>Architect & Date:</strong> ${properties["original_*Architect & Date*"]}</p>
+                  <p><strong>Designated:</strong> ${properties["original_*  Designated  *"]}</p>
                   ${properties.Link ? `<p><a href="${properties.Link}" target="_blank">More Information</a></p>` : ''}
-                  ${properties.Notes ? `<p><strong>Notes:</strong> ${properties.Notes}</p>` : ''}
+                  ${properties["original_*Notes*"] ? `<p><strong>Notes:</strong> ${properties["original_*Notes*"]}</p>` : ''}
               </div>
     `      ;
         // Build and attach popup to coordinates
@@ -54,4 +83,32 @@ const map = new mapboxgl.Map({
       map.on('mouseleave', 'points-layer', () => {
             map.getCanvas().style.cursor = '';
       });       
+      let hoveredStateId = null;
+
+map.on('mousemove', 'points-layer', (e) => {
+    if (e.features.length > 0) {
+        if (hoveredStateId !== null) {
+            map.setFeatureState(
+                { source: 'points-data', id: hoveredStateId },
+                { hover: false }
+            );
+        }
+        hoveredStateId = e.features[0].id;
+        map.setFeatureState(
+            { source: 'points-data', id: hoveredStateId },
+            { hover: true }
+        );
+    }
+});
+
+map.on('mouseleave', 'points-layer', () => {
+    if (hoveredStateId !== null) {
+        map.setFeatureState(
+            { source: 'points-data', id: hoveredStateId },
+            { hover: false }
+        );
+    }
+    hoveredStateId = null;
+});
+
   });
