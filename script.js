@@ -38,18 +38,6 @@ const map = new mapboxgl.Map({
     });
 
         map.addLayer({
-            id: 'cluster-count',
-            type: 'symbol',
-            source: 'points-data',
-            filter: ['has', 'point_count'],
-            layout: {
-                'text-field': ['get', 'point_count_abbreviated'],
-                'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-                'text-size': 12
-            }
-        });
-
-        map.addLayer({
             id: 'unclustered-point',
             type: 'circle',
             source: 'points-data',
