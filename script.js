@@ -11,28 +11,28 @@ const map = new mapboxgl.Map({
             type: 'geojson',
             data: 'https://raw.githubusercontent.com/marieltdr/183geodata/refs/heads/main/183data.geojson',
             generateId: true,
-            cluster: true, // Enable clustering
-            clusterMaxZoom: 12, // Max zoom level to cluster points on
-            clusterRadius: 50 // Radius in pixels to use for clustering
+            cluster: true, 
+            clusterMaxZoom: 12, 
+            clusterRadius: 50 
       });
 
         map.addLayer({
         id: 'clusters',
         type: 'circle',
         source: 'points-data',
-        filter: ['has', 'point_count'], // Filter for cluster features
+        filter: ['has', 'point_count'], 
         paint: {
             'circle-color': [
                 'step',
                 ['get', 'point_count'],
-                '#51bbd6', // Color for clusters with less than 100 points
-                100, '#f1f075', // Color for clusters with 100-750 points
-                750, '#f28cb1' // Color for clusters with 750+ points
+                '#51bbd6', 
+                100, '#f1f075', 
+                750, '#f28cb1' 
             ],
             'circle-radius': [
                 'step',
                 ['get', 'point_count'],
-                20, 100, 30, 750, 40 // Radius based on point count
+                20, 100, 30, 750, 40 
             ]
         }
     });
